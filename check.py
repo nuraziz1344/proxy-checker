@@ -1,6 +1,7 @@
 from multiprocessing.dummy import Array
 import os
 import time
+import requests
 from requests import get
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -46,12 +47,28 @@ def check (proxs:Array):
          if res.ok:
             print(f"found valid proxy: {add}")
             open(validFile, "a").write(add+"\n")
-      except :
-         open(invalidFile, "a").write(add+"\n")
+      except:
+         try:
+            res = get("http://api.ipify.org", verify=False, proxies={"http":"http://"+add+"/", "https":"https://"+add+"/"}, timeout=60)
+            if res.ok:
+               print(f"found valid proxy: {add}")
+               open(validFile, "a").write(add+"\n")
+         except requests.exceptions.RequestException  as e:
+            msg = f"{add} | "+str(e.args[0].reason.args[-1]).split(":")[-1]
+            print(msg)
+            open(invalidFile, "a").write(msg)
 
 
+def is_any_thread_alive(thr):
+    return True in [t.is_alive() for t in thr]
 
+threads = []
 for i in range(cpus):
    print(f"Thread {i}, check {len(cProx[i])} accounts...")
    t = Thread(target=check, args=(cProx[i], ))
+   t.daemon = True
    t.start()
+   threads.append(t)
+
+while is_any_thread_alive(threads):
+    time.sleep(1)
