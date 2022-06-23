@@ -1,0 +1,25 @@
+{
+  "name": "proxies",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "nodemon -e ts index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/node-fetch": "^2.6.2"
+  },
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "http-proxy-agent": "^5.0.0",
+    "https": "^1.0.0",
+    "https-proxy-agent": "^5.0.1",
+    "node-fetch": "^2.6.7",
+    "path": "^0.12.7"
+  }
+}
