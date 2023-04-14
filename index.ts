@@ -1,6 +1,15 @@
 import axios from "axios";
 import { appendFileSync } from "fs";
 import { SocksProxyAgent } from "socks-proxy-agent";
+import Express from "express";
+
+const app = Express();
+app.get("/", (req, res) => {
+  res.send("ok");
+});
+const server = app.listen(parseInt(process.env?.PORT) || 3000, "0.0.0.0", () => {
+  console.log('starting...')
+});
 
 var checked = 0,
   valid = 0;
@@ -15,7 +24,7 @@ async function check(proxies) {
     })
   ).then((e) => e.filter((v) => !!v));
   if (res.length > 0) {
-    valid += res.length
+    valid += res.length;
     appendFileSync("socks5.txt", res.join("\n") + "\n");
   }
 }
