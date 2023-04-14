@@ -1,3 +1,4 @@
+dist
 node_modules
 proxy-checker
 pnpm-lock.yaml
