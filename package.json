@@ -1,25 +1,30 @@
 {
-  "name": "proxies",
+  "name": "proxy-checker",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "test": "nodemon -e ts index.ts"
+    "start": "node .",
+    "build": "tsc && pkg -t node16-linux dist/index.js -o proxy-checker"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuraziz1344/proxy-checker.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "devDependencies": {
-    "@types/node": "^18.0.0",
-    "@types/node-fetch": "^2.6.2"
+  "bugs": {
+    "url": "https://github.com/nuraziz1344/proxy-checker/issues"
   },
+  "homepage": "https://github.com/nuraziz1344/proxy-checker#readme",
   "dependencies": {
-    "fs": "^0.0.1-security",
-    "http": "^0.0.1-security",
-    "http-proxy-agent": "^5.0.0",
-    "https": "^1.0.0",
-    "https-proxy-agent": "^5.0.1",
-    "node-fetch": "^2.6.7",
-    "path": "^0.12.7"
+    "axios": "^0.27.2",
+    "child_process": "^1.0.2",
+    "socks-proxy-agent": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "typescript": "^5.0.4"
   }
 }
