@@ -1,18 +1,51 @@
 import axios from "axios";
-import { appendFileSync } from "fs";
+import { appendFileSync, existsSync, watchFile, writeFileSync } from "fs";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import Express from "express";
+import { createHash } from "crypto";
+import { readFileSync } from "fs";
+import moment from "moment";
+
+if (!existsSync("socks5.txt")) {
+  writeFileSync("socks5.txt", "", "utf-8");
+}
 
 const app = Express();
 app.get("/", (req, res) => {
   res.send("ok");
 });
 const server = app.listen(parseInt(process.env?.PORT) || 3000, "0.0.0.0", () => {
-  console.log('starting...')
+  console.log("starting...");
 });
+
+async function push() {
+  const data = readFileSync("socks5.txt", "utf-8");
+  axios
+    .put(
+      `https://api.github.com/repos/nuraziz1344/proxy-checker/contents/socks5/update.txt`,
+      {
+        message: `update ${moment().format("DD-MM-YYYY_HHmmss")}`,
+        branch: "main",
+        committer: { name: "Nur Aziz", email: "sukabaru09@gmail.com" },
+        content: readFileSync("socks5.txt", "base64"),
+        sha: createHash("sha1").update(`blob ${data.length}\0${data}`).digest("hex"),
+      },
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          Authorization: "Bearer "+process.env.GH_TOKEN,
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    )
+    .catch((e) => console.error(e));
+}
 
 var checked = 0,
   valid = 0;
+const oldData = readFileSync("socks5.txt", "utf-8").split("\n");
+watchFile("socks5.txt", { interval: 1000 * 30 }, () => push());
+
 async function check(proxies) {
   const res = await Promise.all(
     proxies.map((proxy) => {
@@ -45,6 +78,7 @@ async function main() {
       .get(source)
       .then((e) => e.data && e.data?.split("\n")?.filter((v) => v?.trim() && /((\d{1,3}((\.)(\d{1,3})){3})\:(\d{1,5}))/.test(v)))
       .then((e) => e.map((v) => v.match(/((\d{1,3}((\.)(\d{1,3})){3})\:(\d{1,5}))/)[0]))
+      .then((e) => e.filter((v) => !oldData.includes(v)))
       .catch((e) => {
         console.error(e);
         return null;
