@@ -3,3 +3,5 @@ node_modules
 proxy-checker
 pnpm-lock.yaml
 **/*test.*
+.env
+socks5.txt

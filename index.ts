@@ -5,6 +5,7 @@ import Express from "express";
 import { createHash } from "crypto";
 import { readFileSync } from "fs";
 import moment from "moment";
+import "dotenv/config";
 
 if (!existsSync("socks5.txt")) {
   writeFileSync("socks5.txt", "", "utf-8");
@@ -17,26 +18,29 @@ app.get("/", (req, res) => {
 const server = app.listen(parseInt(process.env?.PORT) || 3000, "0.0.0.0", () => {
   console.log("starting...");
 });
+const header = {
+  Accept: "application/vnd.github+json",
+  Authorization: `Bearer ${process.env.GH_TOKEN}`,
+  "X-GitHub-Api-Version": "2022-11-28",
+};
 
 async function push() {
-  const data = readFileSync("socks5.txt", "utf-8");
+  const oldSha = await axios
+    .get(`https://api.github.com/repos/nuraziz1344/proxy-checker/contents/socks5/update.txt`)
+    .then((e) => e?.data?.sha)
+    .catch(() => null);
+
   axios
     .put(
       `https://api.github.com/repos/nuraziz1344/proxy-checker/contents/socks5/update.txt`,
       {
         message: `update ${moment().format("DD-MM-YYYY_HHmmss")}`,
         branch: "main",
-        committer: { name: "Nur Aziz", email: "sukabaru09@gmail.com" },
+        committer: { name: process.env.GH_NAME, email: process.env.GH_EMAIL },
         content: readFileSync("socks5.txt", "base64"),
-        sha: createHash("sha1").update(`blob ${data.length}\0${data}`).digest("hex"),
+        sha: oldSha,
       },
-      {
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer "+process.env.GH_TOKEN,
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      }
+      { headers: header }
     )
     .catch((e) => console.error(e));
 }
@@ -78,7 +82,12 @@ async function main() {
       .get(source)
       .then((e) => e.data && e.data?.split("\n")?.filter((v) => v?.trim() && /((\d{1,3}((\.)(\d{1,3})){3})\:(\d{1,5}))/.test(v)))
       .then((e) => e.map((v) => v.match(/((\d{1,3}((\.)(\d{1,3})){3})\:(\d{1,5}))/)[0]))
-      .then((e) => e.filter((v) => !oldData.includes(v)))
+      .then((e) => {
+        console.log("found %s proxies", e.length);
+        const f = e.filter((v) => !oldData.includes(v));
+        console.log("checking %s proxies", f.length);
+        return f;
+      })
       .catch((e) => {
         console.error(e);
         return null;
